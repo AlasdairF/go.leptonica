@@ -36,7 +36,7 @@ func (p *pixStruct) Free() {
 // LEPT_DLL extern PIX * pixRead ( const char *filename );
 
 // ImportFile creates a new pixStruct from given filename
-func ImportFile(filename string) (*pixStruct, error) {
+func NewPixFromFile(filename string) (*pixStruct, error) {
 	cFilename := C.CString(filename)
 	defer C.free(unsafe.Pointer(cFilename))
 
@@ -54,7 +54,7 @@ func ImportFile(filename string) (*pixStruct, error) {
 }
 
 // ImportMem creates a new pixStruct instance from a byte array
-func ImportMem(image *[]byte) (*pixStruct, error) {
+func NewPixReadMem(image *[]byte) (*pixStruct, error) {
 	ptr := C.uglycast(unsafe.Pointer(&(*image)[0]))
 	CPIX := C.pixReadMem(ptr, C.size_t(len(*image)))
 	if CPIX == nil {
