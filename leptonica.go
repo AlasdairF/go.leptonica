@@ -76,7 +76,7 @@ func (p *goPix) PixFindSkew() (float32, float32) {
 
 func (p *goPix) PixFindSkewSlow() (float32, float32) {
 	var angle, conf C.l_float32
-	C.pixFindSkewSweepAndSearchScore(p.cPix, &angle, &conf, 1, 1, 10, 0, 0)
+	C.pixFindSkewSweepAndSearch(p.cPix, &angle, &conf, 1, 1, 10, 0, 0)
 	return float32(angle), float32(conf)
 }
 
