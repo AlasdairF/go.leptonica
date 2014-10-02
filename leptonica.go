@@ -73,7 +73,7 @@ func NewPixReadMem(image *[]byte) (*Pix, error) {
 // ----------- FUNCTIONS ----------
 
 func (p *Pix) PixFindSkew() (float32, float32) {
-	var angle, conf C.float
-	C.pixFindSkew(&p.cPix, &angle, &conf)
+	var angle, conf C.l_float32
+	C.pixFindSkew(p.cPix, &angle, &conf)
 	return float32(angle), float32(conf)
 }
