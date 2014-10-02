@@ -35,7 +35,7 @@ func (p *goPix) Free() {
 
 // LEPT_DLL extern PIX * pixRead ( const char *filename );
 
-// ImportFile creates a new goPix from given filename
+// NewPixFromFile creates a new goPix from given filename
 func NewPixFromFile(filename string) (*goPix, error) {
 	cFilename := C.CString(filename)
 	defer C.free(unsafe.Pointer(cFilename))
@@ -53,7 +53,7 @@ func NewPixFromFile(filename string) (*goPix, error) {
 	return pix, nil
 }
 
-// ImportMem creates a new goPix instance from a byte array
+// NewPixReadMem creates a new goPix instance from a byte array
 func NewPixReadMem(image *[]byte) (*goPix, error) {
 	ptr := C.uglycast(unsafe.Pointer(&(*image)[0]))
 	CPIX := C.pixReadMem(ptr, C.size_t(len(*image)))
@@ -66,10 +66,19 @@ func NewPixReadMem(image *[]byte) (*goPix, error) {
 	return pix, nil
 }
 
-// ----------- FUNCTIONS ----------
+// -------------- IMAGE FUNCTIONS -------------
 
 func (p *goPix) PixFindSkew() (float32, float32) {
 	var angle, conf C.l_float32
 	C.pixFindSkew(p.cPix, &angle, &conf)
 	return float32(angle), float32(conf)
 }
+
+func (p *goPix) PixFindSkewSlow() (float32, float32) {
+	var angle, conf C.l_float32
+	C.PixFindSkewSweepAndSearchScore(p.cPix, &angle, &conf, 1, 1, 10, 0, 0)
+	return float32(angle), float32(conf)
+}
+
+
+
