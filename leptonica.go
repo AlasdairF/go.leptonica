@@ -15,14 +15,14 @@ import (
 	"unsafe"
 )
 
-type pixStruct struct {
+type goPix struct {
 	cPix   *C.PIX
 	closed bool
 	lock   sync.Mutex
 }
 
 // Deletes the pic, this must be called
-func (p *pixStruct) Free() {
+func (p *goPix) Free() {
 	p.lock.Lock()
 	defer p.lock.Unlock()
 	if !p.closed {
@@ -35,8 +35,8 @@ func (p *pixStruct) Free() {
 
 // LEPT_DLL extern PIX * pixRead ( const char *filename );
 
-// ImportFile creates a new pixStruct from given filename
-func NewPixFromFile(filename string) (*pixStruct, error) {
+// ImportFile creates a new goPix from given filename
+func NewPixFromFile(filename string) (*goPix, error) {
 	cFilename := C.CString(filename)
 	defer C.free(unsafe.Pointer(cFilename))
 
@@ -47,20 +47,20 @@ func NewPixFromFile(filename string) (*pixStruct, error) {
 	}
 
 	// all done
-	pix := &pixStruct{
+	pix := &goPix{
 		cPix: CPIX,
 	}
 	return pix, nil
 }
 
-// ImportMem creates a new pixStruct instance from a byte array
-func NewPixReadMem(image *[]byte) (*pixStruct, error) {
+// ImportMem creates a new goPix instance from a byte array
+func NewPixReadMem(image *[]byte) (*goPix, error) {
 	ptr := C.uglycast(unsafe.Pointer(&(*image)[0]))
 	CPIX := C.pixReadMem(ptr, C.size_t(len(*image)))
 	if CPIX == nil {
 		return nil, errors.New("Not a valid image file")
 	}
-	pix := &pixStruct{
+	pix := &goPix{
 		cPix: CPIX,
 	}
 	return pix, nil
@@ -68,7 +68,7 @@ func NewPixReadMem(image *[]byte) (*pixStruct, error) {
 
 // ----------- FUNCTIONS ----------
 
-func (p *pixStruct) pixStructFindSkew() (float32, float32) {
+func (p *goPix) PixFindSkew() (float32, float32) {
 	var angle, conf C.l_float32
 	C.pixFindSkew(p.cPix, &angle, &conf)
 	return float32(angle), float32(conf)
