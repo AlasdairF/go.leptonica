@@ -91,6 +91,7 @@ func (p *goPix) SkewAngle() (float32, float32) {
 	C.free(unsafe.Pointer(angle))
 	C.free(unsafe.Pointer(conf))
 	return a, c
+}
 
 func (p *goPix) SkewAngleSlow() (float32, float32) {
 	var angle, conf C.l_float32
