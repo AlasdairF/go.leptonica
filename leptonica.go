@@ -69,12 +69,10 @@ func NewPixReadMem(image *[]byte) (*goPix, error) {
 // NewPixReadMem creates a new goPix instance from a byte array
 func (p *goPix) PixWriteMemPnm() (data, error) {
 	
-	var b C.l_uint8
+	var data []uint8
+	ptr := C.uglycast(unsafe.Pointer(&(*data)[0]))
 	var size C.size_t
-	err := C.pixWriteMemPnm(&b, &size, p.cPix)
-	data := []uint8(b)
-	C.free(unsafe.Pointer(b))
-	C.free(unsafe.Pointer(size))
+	err := C.pixWriteMemPnm(ptr, &size, p.cPix)
 	if err == 1 {
 		return data, errors.New(`Failed writing PBM to bytes`)
 	}
@@ -87,19 +85,13 @@ func (p *goPix) PixWriteMemPnm() (data, error) {
 func (p *goPix) SkewAngle() (float32, float32) {
 	var angle, conf C.l_float32
 	C.pixFindSkew(p.cPix, &angle, &conf)
-	a, c := float32(angle), float32(conf)
-	C.free(unsafe.Pointer(angle))
-	C.free(unsafe.Pointer(conf))
-	return a, c
+	return float32(angle), float32(conf)
 }
 
 func (p *goPix) SkewAngleSlow() (float32, float32) {
 	var angle, conf C.l_float32
 	C.pixFindSkewSweepAndSearch(p.cPix, &angle, &conf, 1, 1, 10, 1, 0.01)
-	a, c := float32(angle), float32(conf)
-	C.free(unsafe.Pointer(angle))
-	C.free(unsafe.Pointer(conf))
-	return a, c
+	return float32(angle), float32(conf)
 }
 
 func (p *goPix) OrientationAngle() (*goPix, float32, int, error) {
