@@ -70,7 +70,7 @@ func NewPixReadMem(image *[]byte) (*goPix, error) {
 func (p *goPix) PixWriteMemPnm() ([]byte, error) {
 	
 	data := make([]byte, 10000)
-	ptr := C.uglycast(unsafe.Pointer(&(*data)[0]))
+	ptr := C.uglycast(unsafe.Pointer(&data[0]))
 	var size C.size_t
 	er := C.pixWriteMemPnm(&ptr, &size, p.cPix)
 	if er == 1 {
