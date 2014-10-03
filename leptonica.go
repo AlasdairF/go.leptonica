@@ -107,7 +107,7 @@ func (p *goPix) OrientationAngle() (*goPix, float32, int, error) {
 	*/
 	newpix := p.cPix
 	var upconf, leftconf C.l_float32
-	err := C.pixOrientDetect(newpix, &upconf, &leftconf, 0, 0)
+	err := C.pixOrientDetect(newpix, &upconf, &leftconf, 1, 0)
 	if err == 1 {
 		C.pixDestroy(&newpix)
 		C.free(unsafe.Pointer(newpix))
