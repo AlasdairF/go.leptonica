@@ -68,17 +68,73 @@ func NewPixReadMem(image *[]byte) (*goPix, error) {
 
 // -------------- IMAGE FUNCTIONS -------------
 
-func (p *goPix) PixFindSkew() (float32, float32) {
+func (p *goPix) SkewAngle() (float32, float32) {
 	var angle, conf C.l_float32
 	C.pixFindSkew(p.cPix, &angle, &conf)
 	return float32(angle), float32(conf)
 }
 
-func (p *goPix) PixFindSkewSlow() (float32, float32) {
+func (p *goPix) SkewAngleSlow() (float32, float32) {
 	var angle, conf C.l_float32
 	C.pixFindSkewSweepAndSearch(p.cPix, &angle, &conf, 1, 1, 10, 1, 0.01)
 	return float32(angle), float32(conf)
 }
 
-
+func (p *goPix) OrientationAngle() (*goPix, float32, int, error) {
+	var a, c C.l_float32
+	newpix := C.pixDeskewGeneral(p.cPix, 1, 7, 0.01, 1, 0, &a, &c)
+	if newpix == nil {
+		return p, 0, 0, errors.New(`Deskew failed`)
+	}
+	p.Free()
+	var upconf, leftconf C.l_float32
+	err := C.pixOrientDetect(newpix, upconf, leftconf, 0, 0)
+	if err == 1 {
+		Free(newpix)
+		return nil, 0, 0, errors.New(`Orientation detection failed`)
+	}
+	var orient C.l_int32
+	err = C.makeOrientDecision(upconf, leftconf, 0.0, 0.0, orient, 0)
+	if err == 1 {
+		Free(newpix)
+		return nil, 0, 0, errors.New(`Orientation decision failed`)
+	}
+	
+	radians := float32(a)
+	orientation := int(orient)
+	switch orientation {
+		case 2: radians += 1.57079633 // left-facing
+				tmp := C.pixRotate90(newpix, newpix)
+				if tmp != newpix && tmp != nil {
+					Free(newpix)
+					newpix = tmp
+				}
+		case 3: radians += 3.14159265 // upside-down
+				tmp := C.pixRotate180(newpix, newpix)
+				if tmp != newpix && tmp != nil {
+					Free(newpix)
+					newpix = tmp
+				}
+		case 4: radians += 4.71238898 // right-facing
+				tmp := C.pixRotate180(newpix, newpix)
+				if tmp != newpix && tmp != nil {
+					Free(newpix)
+					newpix = tmp
+				}
+				tmp = C.pixRotate90(newpix, newpix)
+				if tmp != newpix && tmp != nil {
+					Free(newpix)
+					newpix = tmp
+				}
+	}
+	for radians > 6.28318531 {
+		radians -=  6.28318531
+	}
+	
+	pix := &goPix{
+		cPix: newpix,
+	}
+	
+	return pix, radians, orientation, nil
+}
 
