@@ -88,15 +88,15 @@ func (p *goPix) OrientationAngle() (*goPix, float32, int, error) {
 	}
 	p.Free()
 	var upconf, leftconf C.l_float32
-	err := C.pixOrientDetect(newpix, upconf, leftconf, 0, 0)
+	err := C.pixOrientDetect(newpix, &upconf, &leftconf, 0, 0)
 	if err == 1 {
-		Free(newpix)
+		newpix.Free()
 		return nil, 0, 0, errors.New(`Orientation detection failed`)
 	}
 	var orient C.l_int32
-	err = C.makeOrientDecision(upconf, leftconf, 0.0, 0.0, orient, 0)
+	err = C.makeOrientDecision(upconf, leftconf, 0.0, 0.0, &orient, 0)
 	if err == 1 {
-		Free(newpix)
+		newpix.Free()
 		return nil, 0, 0, errors.New(`Orientation decision failed`)
 	}
 	
@@ -104,26 +104,21 @@ func (p *goPix) OrientationAngle() (*goPix, float32, int, error) {
 	orientation := int(orient)
 	switch orientation {
 		case 2: radians += 1.57079633 // left-facing
-				tmp := C.pixRotate90(newpix, newpix)
+				tmp := C.pixRotate90(newpix, 1)
 				if tmp != newpix && tmp != nil {
-					Free(newpix)
+					newpix.Free()
 					newpix = tmp
 				}
 		case 3: radians += 3.14159265 // upside-down
 				tmp := C.pixRotate180(newpix, newpix)
 				if tmp != newpix && tmp != nil {
-					Free(newpix)
+					newpix.Free()
 					newpix = tmp
 				}
 		case 4: radians += 4.71238898 // right-facing
-				tmp := C.pixRotate180(newpix, newpix)
+				tmp := C.pixRotate90(newpix, -1)
 				if tmp != newpix && tmp != nil {
-					Free(newpix)
-					newpix = tmp
-				}
-				tmp = C.pixRotate90(newpix, newpix)
-				if tmp != newpix && tmp != nil {
-					Free(newpix)
+					newpix.Free()
 					newpix = tmp
 				}
 	}
