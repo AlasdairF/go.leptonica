@@ -69,11 +69,11 @@ func NewPixReadMem(image *[]byte) (*goPix, error) {
 // NewPixReadMem creates a new goPix instance from a byte array
 func (p *goPix) PixWriteMemPnm() ([]byte, error) {
 	
-	var data []byte
+	data := make([]byte, 10000)
 	ptr := C.uglycast(unsafe.Pointer(&(*data)[0]))
 	var size C.size_t
-	err := C.pixWriteMemPnm(&ptr, &size, p.cPix)
-	if err == 1 {
+	er := C.pixWriteMemPnm(&ptr, &size, p.cPix)
+	if er == 1 {
 		return data, errors.New(`Failed writing PBM to bytes`)
 	}
 	return data, nil
