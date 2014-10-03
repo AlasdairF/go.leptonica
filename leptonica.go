@@ -66,18 +66,37 @@ func NewPixReadMem(image *[]byte) (*goPix, error) {
 	return pix, nil
 }
 
+// NewPixReadMem creates a new goPix instance from a byte array
+func (p *goPix) PixWriteMemPnm() (*data, error) {
+	
+	var b C.l_uint8
+	var size C.size_t
+	err := C.pixWriteMemPnm(&b, &size, p.cPix)
+	data := []uint8(b)
+	if err == 1 {
+		return &b, errors.New(`Failed writing PBM to bytes`)
+	}
+	return &b, nil
+	
+}
+
 // -------------- IMAGE FUNCTIONS -------------
 
 func (p *goPix) SkewAngle() (float32, float32) {
 	var angle, conf C.l_float32
 	C.pixFindSkew(p.cPix, &angle, &conf)
-	return float32(angle), float32(conf)
-}
+	a, c := float32(angle), float32(conf)
+	C.free(unsafe.Pointer(angle))
+	C.free(unsafe.Pointer(conf))
+	return a, c
 
 func (p *goPix) SkewAngleSlow() (float32, float32) {
 	var angle, conf C.l_float32
 	C.pixFindSkewSweepAndSearch(p.cPix, &angle, &conf, 1, 1, 10, 1, 0.01)
-	return float32(angle), float32(conf)
+	a, c := float32(angle), float32(conf)
+	C.free(unsafe.Pointer(angle))
+	C.free(unsafe.Pointer(conf))
+	return a, c
 }
 
 func (p *goPix) OrientationAngle() (*goPix, float32, int, error) {
@@ -90,13 +109,15 @@ func (p *goPix) OrientationAngle() (*goPix, float32, int, error) {
 	var upconf, leftconf C.l_float32
 	err := C.pixOrientDetect(newpix, &upconf, &leftconf, 0, 0)
 	if err == 1 {
-		newpix.Free()
+		C.pixDestroy(&newpix)
+		C.free(unsafe.Pointer(newpix))
 		return nil, 0, 0, errors.New(`Orientation detection failed`)
 	}
 	var orient C.l_int32
 	err = C.makeOrientDecision(upconf, leftconf, 0.0, 0.0, &orient, 0)
 	if err == 1 {
-		newpix.Free()
+		C.pixDestroy(&newpix)
+		C.free(unsafe.Pointer(newpix))
 		return nil, 0, 0, errors.New(`Orientation decision failed`)
 	}
 	
@@ -106,19 +127,22 @@ func (p *goPix) OrientationAngle() (*goPix, float32, int, error) {
 		case 2: radians += 1.57079633 // left-facing
 				tmp := C.pixRotate90(newpix, 1)
 				if tmp != newpix && tmp != nil {
-					newpix.Free()
+					C.pixDestroy(&newpix)
+					C.free(unsafe.Pointer(newpix))
 					newpix = tmp
 				}
 		case 3: radians += 3.14159265 // upside-down
 				tmp := C.pixRotate180(newpix, newpix)
 				if tmp != newpix && tmp != nil {
-					newpix.Free()
+					C.pixDestroy(&newpix)
+					C.free(unsafe.Pointer(newpix))
 					newpix = tmp
 				}
 		case 4: radians += 4.71238898 // right-facing
 				tmp := C.pixRotate90(newpix, -1)
 				if tmp != newpix && tmp != nil {
-					newpix.Free()
+					C.pixDestroy(&newpix)
+					C.free(unsafe.Pointer(newpix))
 					newpix = tmp
 				}
 	}
