@@ -108,6 +108,7 @@ func (p *goPix) OrientationAngle() (*goPix, float32, int, error) {
 		C.free(unsafe.Pointer(newpix))
 		return nil, 0, 0, errors.New(`Orientation detection failed`)
 	}
+	fmt.Println(float32(upconf), float32(leftconf))
 	var orient C.l_int32
 	err = C.makeOrientDecision(upconf, leftconf, 0.0, 0.0, &orient, 0)
 	if err == 1 {
@@ -115,7 +116,7 @@ func (p *goPix) OrientationAngle() (*goPix, float32, int, error) {
 		C.free(unsafe.Pointer(newpix))
 		return nil, 0, 0, errors.New(`Orientation decision failed`)
 	}
-	
+	fmt.Println(int(orient))
 	radians := float32(a)
 	orientation := int(orient)
 	switch orientation {
