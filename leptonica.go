@@ -96,12 +96,15 @@ func (p *goPix) SkewAngleSlow() (float32, float32) {
 }
 
 func (p *goPix) OrientationAngle() (*goPix, float32, int, error) {
-	var a, c C.l_float32
+	var a, c C.l_float32 = 0, 0
+	/*
 	newpix := C.pixDeskewGeneral(p.cPix, 1, 7, 0.01, 1, 0, &a, &c)
 	if newpix == nil {
 		return p, 0, 0, errors.New(`Deskew failed`)
 	}
 	p.Free()
+	*/
+	newpix := p.cPix
 	var upconf, leftconf C.l_float32
 	err := C.pixOrientDetect(newpix, &upconf, &leftconf, 0, 0)
 	if err == 1 {
