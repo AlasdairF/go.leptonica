@@ -13,6 +13,7 @@ import (
 	"errors"
 	"sync"
 	"unsafe"
+	"fmt"
 )
 
 type goPix struct {
