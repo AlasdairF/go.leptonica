@@ -96,7 +96,8 @@ func (p *goPix) SkewAngleSlow() (float32, float32) {
 }
 
 func (p *goPix) OrientationAngle() (*goPix, float32, int, error) {
-	var a, c C.l_float32 = 0, 0
+	//var a, c C.l_float32
+	var a C.l_float32 = 0
 	/*
 	newpix := C.pixDeskewGeneral(p.cPix, 1, 7, 0.01, 1, 0, &a, &c)
 	if newpix == nil {
