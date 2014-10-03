@@ -67,7 +67,7 @@ func NewPixReadMem(image *[]byte) (*goPix, error) {
 }
 
 // NewPixReadMem creates a new goPix instance from a byte array
-func (p *goPix) PixWriteMemPnm() (data []byte, err error) {
+func (p *goPix) PixWriteMemPnm() ([]byte, error) {
 	
 	var data []byte
 	ptr := C.uglycast(unsafe.Pointer(&(*data)[0]))
